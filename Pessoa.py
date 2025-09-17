@@ -21,13 +21,6 @@ class Pessoa(ABC):
             self.__created_at = datetime.now()
             self.__avaliacao = 0.0
 
-    def _hash_password(self, senha):
-            salt = "aluga_facil_melhor_que_olx"
-            return hashlib.sha256((senha + salt).encode()).hexdigest()
-        
-    def verificar_senha(self, senha):
-        return self._hash_password(senha) == self.senha
-
     @property
     def cpf(self):
         return self.__cpf
@@ -103,6 +96,13 @@ class Pessoa(ABC):
     @abstractmethod
     def get_tipo_usuario(self):
         pass
+
+    def _hash_password(self, senha):
+            salt = "aluga_facil_melhor_que_olx"
+            return hashlib.sha256((senha + salt).encode()).hexdigest()
+        
+    def verificar_senha(self, senha):
+        return self._hash_password(senha) == self.senha
     
     def __str__(self):
         return f"{self.nome} ({self.email}) - {self.get_tipo_usuario()}"
