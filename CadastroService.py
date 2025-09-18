@@ -1,48 +1,72 @@
 from typing import Optional, Dict, Any, Tuple
 from datetime import datetime
-from Pessoa import Pessoa
+from Locatario import Locatario
+from Proprietario import Proprietario
 from RepositorioUsuarios import RepositorioUsuarios
 
 class CadastroService:
     def __init__(self, repo: RepositorioUsuarios):
         self.repo = repo
 
-    def cadastrar(self, cpf: str, data_nascimento: datetime, email: str, nome: str, senha: str, telefone: str, telefone_verificado: bool = False) -> Tuple[bool, Optional[Dict[str, Any]], str]:
+    def cadastrar(self, tipo_usuario: str, cpf: str, data_nascimento: datetime, email: str, 
+                  nome: str, senha: str, telefone: str, telefone_verificado: bool = False, 
+                  **outros_dados) -> Tuple[bool, Optional[Dict[str, Any]], str]:
         '''
-        Retorno de cadastrar():
-        True (cadastro realizado) OU False (cadastro falhou) ;
-        Json com informações do usuário (Só retorna se cadastro for realizado) ;
-        Motivo do erro OU Sucesso
+        Cadastra um usuário como Locatário ou Proprietário, dependendo do tipo de usuário informado.
+        
+        tipo_usuario: "locatario" ou "proprietario"
+        Outros parâmetros variam conforme o tipo de usuário.
         '''
         
-        # Verifica se todos os campos são válidos
+
         if not isinstance(cpf, str) or not isinstance(email, str) or not isinstance(senha, str) or not isinstance(nome, str) or not isinstance(telefone, str):
             return False, None, "Dados inválidos"
+        
 
-        # Verifica se o email é único
         email_norm = email.strip().lower()
         if self.repo.obter_por_email(email_norm) is not None:
             return False, None, "E-mail já cadastrado"
+        
 
-        # Cria uma nova instância de Pessoa
-        nova_pessoa = Pessoa(
-            cpf=cpf,
-            data_nascimento=data_nascimento,
-            email=email_norm,
-            nome=nome,
-            senha=senha,
-            telefone=telefone,
-            telefone_verificado=telefone_verificado
-        )
+        if tipo_usuario == "locatario":
 
-        # Adiciona a pessoa ao repositório
-        self.repo.adicionar(nova_pessoa)
+            estudante = outros_dados.get("estudante", False)
+            fumante = outros_dados.get("fumante", False)
+            instituicao_ensino_str = outros_dados.get("instituicao_ensino_str", "")
+            observacoes_str = outros_dados.get("observacoes_str", "")
+            possui_pet = outros_dados.get("possui_pet", False)
+            profissao_str = outros_dados.get("profissao_str", "")
+            tipo_pet_str = outros_dados.get("tipo_pet_str", "")
+            
 
-        # Retorna os dados do usuário em formato JSON
+            novo_usuario = Locatario(cpf, data_nascimento, email_norm, nome, senha, telefone, 
+                                     estudante, fumante, instituicao_ensino_str, observacoes_str,
+                                     possui_pet, profissao_str, tipo_pet_str, telefone_verificado)
+        
+        elif tipo_usuario == "proprietario":
+
+            aceita_apenas_tel_verf = outros_dados.get("aceita_apenas_tel_verf", False)
+            anos_mercado = outros_dados.get("anos_mercado", 0)
+            avaliacao_media = outros_dados.get("avaliacao_media", 0.0)
+            horario_atendimento = outros_dados.get("horario_atendimento", datetime.now())
+            quantidade_imoveis = outros_dados.get("quantidade_imoveis", 0)
+            
+            # Cria a instância do Proprietário
+            novo_usuario = Proprietario(cpf, data_nascimento, email_norm, nome, senha, telefone, 
+                                        aceita_apenas_tel_verf, anos_mercado, avaliacao_media, 
+                                        horario_atendimento, quantidade_imoveis, telefone_verificado)
+        
+        else:
+            return False, None, "Tipo de usuário inválido"
+
+        self.repo.adicionar(novo_usuario)
+        
+
         payload = {
-            "email": nova_pessoa.email,
-            "nome": nova_pessoa.nome,
-            "cpf": nova_pessoa.cpf,
-            "telefoneVerificado": nova_pessoa.telefone_verificado,
+            "email": novo_usuario.email,
+            "nome": novo_usuario.nome,
+            "cpf": novo_usuario.cpf,
+            "tipo": novo_usuario.get_tipo_usuario(),
+            "telefoneVerificado": novo_usuario.telefone_verificado,
         }
         return True, payload, "Cadastro realizado com sucesso"
