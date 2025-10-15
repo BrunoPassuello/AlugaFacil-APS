@@ -1,4 +1,4 @@
-from Pessoa import Pessoa
+from entities.Pessoa import Pessoa
 class Locatario(Pessoa):
     
     def __init__(self, cpf: str, data_nascimento: str, email: str,

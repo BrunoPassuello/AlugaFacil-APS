@@ -1,15 +1,15 @@
 from typing import Optional, Dict, Any, Tuple
 from datetime import datetime
-from Locatario import Locatario
-from Proprietario import Proprietario
-from RepositorioUsuarios import RepositorioUsuarios
+from entities.Locatario import Locatario
+from entities.Proprietario import Proprietario
+from repository.CadastroRepositoryPickle import CadastroRepositoryPickle
 
 class CadastroService:
-    def __init__(self, repo: RepositorioUsuarios):
+    def __init__(self, repo: CadastroRepositoryPickle):
         self.repo = repo
 
     def cadastrar(self, tipo_usuario: str, cpf: str, data_nascimento: datetime, email: str, 
-                  nome: str, senha: str, telefone: str, telefone_verificado: bool = False, 
+                nome: str, senha: str, telefone: str, telefone_verificado: bool = False, 
                   **outros_dados) -> Tuple[bool, Optional[Dict[str, Any]], str]:
         '''
         Cadastra um usuário como Locatário ou Proprietário, dependendo do tipo de usuário informado.
@@ -24,7 +24,7 @@ class CadastroService:
         
 
         email_norm = email.strip().lower()
-        if self.repo.obter_por_email(email_norm) is not None:
+        if self.repo.get_pessoa_email(email_norm) is not None:
             return False, None, "E-mail já cadastrado"
         
 
@@ -40,8 +40,8 @@ class CadastroService:
             
 
             novo_usuario = Locatario(cpf, data_nascimento, email_norm, nome, senha, telefone, 
-                                     estudante, fumante, instituicao_ensino_str, observacoes_str,
-                                     possui_pet, profissao_str, tipo_pet_str, telefone_verificado)
+                                    estudante, fumante, instituicao_ensino_str, observacoes_str,
+                                    possui_pet, profissao_str, tipo_pet_str, telefone_verificado)
         
         elif tipo_usuario == "proprietario":
 
@@ -59,7 +59,7 @@ class CadastroService:
         else:
             return False, None, "Tipo de usuário inválido"
 
-        self.repo.adicionar(novo_usuario)
+        self.repo.adicionar_cadastro(novo_usuario)
         
 
         payload = {
@@ -70,3 +70,6 @@ class CadastroService:
             "telefoneVerificado": novo_usuario.telefone_verificado,
         }
         return True, payload, "Cadastro realizado com sucesso"
+
+    def get_all_cadastros(self):
+        return self.repo.get_all()

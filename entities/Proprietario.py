@@ -1,4 +1,4 @@
-from Pessoa import Pessoa
+from entities.Pessoa import Pessoa
 from datetime import datetime
 
 class Proprietario(Pessoa):
