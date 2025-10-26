@@ -4,7 +4,7 @@ from repository.CadastroRepositoryPickle import CadastroRepositoryPickle
 
 class LoginService:
     def __init__(self, repo: CadastroRepositoryPickle):
-        self.repo = repo
+        self.__repo = repo
 
     def login(self, email: str, senha: str) -> Tuple[bool, Optional[Dict[str, Any]], str]:
         '''
@@ -25,7 +25,7 @@ class LoginService:
             return False, None, "E-mail ou senha inválidos"
 
         #Verifica se há um usuário com aquele email -> retorno de Usuário
-        pessoa = self.repo.get_pessoa_email(email_norm)
+        pessoa = self.__repo.get_pessoa_email(email_norm)
         
         if pessoa is None:
 
@@ -47,4 +47,4 @@ class LoginService:
         return True, payload, "Autenticado"
     
     def get_all_cadastros(self):
-        return self.repo.get_all()
+        return self.__repo.get_all()

@@ -1,13 +1,13 @@
-from nicegui import ui
+from nicegui import ui, app
 
 class DashboardUi:
     
     def render(self):
-        if 'usuario_logado' not in ui.storage.user:
+        if 'usuario_logado' not in app.storage.user:
             ui.navigate.to('/login')
             return
         
-        usuario = ui.storage.user.get('usuario_logado', {})
+        usuario = app.storage.user.get('usuario_logado', {})
         
         with ui.header().classes('items-center justify-between'):
             ui.label('AlugaFacil - Dashboard').classes('text-xl font-bold')
@@ -23,6 +23,6 @@ class DashboardUi:
                 ui.label(f'Tipo: {usuario.get("tipo", "N/A")}')
     
     def fazer_logout(self):
-        ui.storage.user.clear()
+        app.storage.user.clear()
         ui.notify('Logout realizado com sucesso!', type='info')
         ui.navigate.to('/login')
