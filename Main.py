@@ -4,11 +4,16 @@ from views.DashboardUi import DashboardUi
 # Novas UIs
 from views.AnunciosUi import AnunciosUi
 from views.FavoritosUi import FavoritosUi
+from views.CadastroUi import CadastroUI
 
 
 @ui.page('/login')
 def login():
     LoginUI().render()
+    
+@ui.page('/cadastro')
+def cadastro():
+    CadastroUI()
 
 
 @ui.page('/dashboard')
