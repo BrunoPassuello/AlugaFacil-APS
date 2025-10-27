@@ -1,5 +1,4 @@
 {
-    "python.analysis.extraPaths": [
-        "./services"
-    ]
+  "python.analysis.extraPaths": ["./services"],
+  "cursorpyright.analysis.extraPaths": ["./services"]
 }
