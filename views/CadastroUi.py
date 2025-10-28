@@ -189,13 +189,6 @@ class CadastroUI:
             profissao_str = (self.profissao.value or '').strip()
             tipo_pet_str = (self.tipo_pet.value or '').strip() if possui_pet else ""
 
-            if estudante and not instituicao_ensino_str:
-                ui.notify('Informe a instituição de ensino.', type='warning')
-                return
-            if possui_pet and not tipo_pet_str:
-                ui.notify('Informe o tipo do pet.', type='warning')
-                return
-
             outros = {
                 'estudante': estudante,
                 'fumante': fumante,
