@@ -2,7 +2,6 @@ from dataclasses import dataclass, asdict
 from datetime import datetime
 from typing import Dict
 
-
 @dataclass
 class Anuncio:
     """Entidade de domínio que representa um anúncio de imóvel exibido ao locatário."""
@@ -13,7 +12,8 @@ class Anuncio:
     valor: float
     imagem_url: str
     data_postagem: datetime
-
+    proprietario_email: str  # Email do proprietário que criou o anúncio
+    
     def to_dict(self) -> Dict:
         """Converte a instância em um dicionário serializável (útil para JSON/UI)."""
         data = asdict(self)
