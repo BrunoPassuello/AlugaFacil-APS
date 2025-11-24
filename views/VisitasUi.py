@@ -4,17 +4,15 @@ from services.VisitaService import VisitaService
 from services.NegociacaoService import NegociacaoService
 from services.AnuncioService import AnuncioService
 from entities.StatusVisita import StatusVisita
+from entities.StatusNegociacao import StatusNegociacao
 
 class VisitasUi:
-    """Interface para gerenciar agendamento de visitas."""
     
     def __init__(self):
         self._visita_service = VisitaService()
         self._negociacao_service = NegociacaoService()
         self._anuncio_service = AnuncioService()
-    
-    # ---------------- RENDER -----------------
-    
+        
     def render(self):
         if 'usuario_logado' not in app.storage.user:
             ui.navigate.to('/login')
@@ -46,7 +44,7 @@ class VisitasUi:
             
             if tipo == 'locatario':
                 ui.button('Agendar Nova Visita', 
-                        on_click=lambda: self._abrir_dialogo_agendar_visita(email, tipo)).props('color=primary').classes('mb-4')
+                         on_click=lambda: self._abrir_dialogo_agendar_visita(email, tipo)).props('color=primary').classes('mb-4')
             
             visitas = self._obter_visitas_usuario(email, tipo, negociacao_id)
             
@@ -61,12 +59,11 @@ class VisitasUi:
             
             if negociacao_id:
                 ui.button('Voltar para Negociações', 
-                        on_click=lambda: ui.navigate.to('/negociacoes')).classes('mt-8').props('color=primary outline')
+                         on_click=lambda: ui.navigate.to('/negociacoes')).classes('mt-8').props('color=primary outline')
             else:
                 ui.button('Voltar ao Dashboard', 
-                        on_click=lambda: ui.navigate.to('/dashboard')).classes('mt-8').props('color=primary outline')
+                         on_click=lambda: ui.navigate.to('/dashboard')).classes('mt-8').props('color=primary outline')
     
-    # ---------------- PRIVADOS ---------------
     
     def _obter_visitas_usuario(self, email, tipo, negociacao_id=None):
         if negociacao_id:
@@ -86,61 +83,127 @@ class VisitasUi:
     def _render_card_visita(self, visita, tipo_usuario):
         negociacao = self._negociacao_service.get_por_id(visita.negociacao_id)
         
+        anuncio = None
+        if negociacao:
+            anuncio = self._anuncio_service.get_por_id(negociacao.anuncio_id)
+        
         with ui.card().classes('w-full mb-4 p-4'):
-            with ui.row().classes('w-full justify-between items-start'):
+            with ui.row().classes('w-full justify-between items-start gap-4'):
+                if anuncio and anuncio.imagem_url:
+                    with ui.column().classes('flex-shrink-0'):
+                        ui.image(anuncio.imagem_url).classes('w-40 h-32 object-cover rounded')
+                
                 with ui.column().classes('flex-grow'):
                     ui.label(f'Visita #{visita.id}').classes('text-xl font-bold text-primary')
                     ui.label(f'Status: {visita.status.value}').classes('text-md font-medium')
-                    ui.label(f'Data: {visita.data_agendada.strftime("%d/%m/%Y")}').classes('text-sm text-gray-600')
-                    ui.label(f'Horário: {visita.hora_agendada.strftime("%H:%M")}').classes('text-sm text-gray-600')
+                    
+                    ui.separator().classes('my-2')
+                    
+                    if anuncio:
+                        with ui.card().classes('w-full p-3 bg-blue-50'):
+                            ui.label('Informações do Imóvel').classes('text-sm font-bold text-blue-900 mb-2')
+                            
+                            ui.label(anuncio.titulo).classes('text-base font-semibold')
+                            
+                            with ui.row().classes('gap-4 mt-1'):
+                                with ui.row().classes('items-center gap-1'):
+                                    ui.icon('location_on', size='sm').classes('text-blue-600')
+                                    ui.label(f'{anuncio.cidade} - {anuncio.endereco}').classes('text-sm')
+                            
+                            if anuncio.imovel:
+                                with ui.row().classes('gap-4 mt-2'):
+                                    with ui.row().classes('items-center gap-1'):
+                                        ui.icon('bed', size='sm').classes('text-gray-600')
+                                        ui.label(f'{anuncio.imovel.quartos} quartos').classes('text-xs')
+                                    
+                                    with ui.row().classes('items-center gap-1'):
+                                        ui.icon('bathtub', size='sm').classes('text-gray-600')
+                                        ui.label(f'{anuncio.imovel.banheiros} banheiros').classes('text-xs')
+                                    
+                                    with ui.row().classes('items-center gap-1'):
+                                        ui.icon('straighten', size='sm').classes('text-gray-600')
+                                        ui.label(f'{anuncio.imovel.metragem}m²').classes('text-xs')
+                                    
+                                    if anuncio.imovel.possui_garagem:
+                                        with ui.row().classes('items-center gap-1'):
+                                            ui.icon('garage', size='sm').classes('text-gray-600')
+                                            ui.label('Garagem').classes('text-xs')
+                                
+                                # Badge do tipo de imóvel
+                                with ui.row().classes('mt-2'):
+                                    ui.badge(anuncio.imovel.tipo_imovel().capitalize()).classes('bg-blue-600')
+                            
+                            ui.label(f'Valor: R$ {anuncio.valor:.2f}/mês').classes('text-green-600 font-bold text-base mt-2')
+                    else:
+                        ui.label('Anúncio não encontrado').classes('text-orange-600 text-sm italic')
+                    
+                    ui.separator().classes('my-2')
+                    
+                    with ui.row().classes('gap-4'):
+                        with ui.row().classes('items-center gap-1'):
+                            ui.icon('event', size='sm').classes('text-gray-600')
+                            ui.label(f'{visita.data_agendada.strftime("%d/%m/%Y")}').classes('text-sm font-medium')
+                        
+                        with ui.row().classes('items-center gap-1'):
+                            ui.icon('schedule', size='sm').classes('text-gray-600')
+                            ui.label(f'{visita.hora_agendada.strftime("%H:%M")}').classes('text-sm font-medium')
                     
                     if negociacao:
-                        ui.label(f'Negociação: #{negociacao.id}').classes('text-sm text-gray-600')
+                        ui.label(f'Negociação: #{negociacao.id} ({negociacao.status.value})').classes('text-sm text-gray-600 mt-1')
                         
                         if tipo_usuario == 'locatario':
                             ui.label(f'Proprietário: {negociacao.proprietario_email}').classes('text-sm text-gray-600')
                         else:
-                            ui.label(f'Locatário: {negociacao.locatario_email}').classes('text-sm text-gray-600')
+                            ui.label(f'Locatário Interessado: {negociacao.locatario_email}').classes('text-sm text-gray-600')
                     
                     if visita.observacoes:
-                        ui.label(f'Observações: {visita.observacoes}').classes('text-sm text-gray-700 mt-2')
-                
-                with ui.column().classes('gap-2'):
+                        with ui.card().classes('w-full p-2 bg-yellow-50 mt-2'):
+                            ui.label(f'📝 Observações: {visita.observacoes}').classes('text-xs text-gray-700')
+
+                with ui.column().classes('gap-2 flex-shrink-0'):
                     if visita.status == StatusVisita.AGENDADA:
-                        
                         if tipo_usuario == 'locatario':
-                            ui.button('Reagendar', 
-                                    on_click=lambda v=visita: self._abrir_dialogo_reagendar(v)).props('color=primary size=sm')
-                            ui.button('Cancelar', 
-                                    on_click=lambda v=visita: self._cancelar_visita(v.id)).props('color=negative size=sm')
+                            ui.button('Reagendar',
+                                    on_click=lambda v=visita: self._abrir_dialogo_reagendar(v)).props('color=primary size=sm icon=edit_calendar')
+                            ui.button('Cancelar',
+                                    on_click=lambda v=visita: self._cancelar_visita(v.id)).props('color=negative size=sm icon=cancel')
                         
                         if tipo_usuario == 'proprietario':
-                            ui.button('Marcar Realizada', 
-                                    on_click=lambda v=visita: self._realizar_visita(v.id)).props('color=positive size=sm')
-                            ui.button('Não Compareceu', 
-                                    on_click=lambda v=visita: self._registrar_nao_comparecimento(v.id)).props('color=warning size=sm')
+                            ui.button('Realizada',
+                                    on_click=lambda v=visita: self._realizar_visita(v.id)).props('color=positive size=sm icon=check_circle')
+                            ui.button('Não Compareceu',
+                                    on_click=lambda v=visita: self._registrar_nao_comparecimento(v.id)).props('color=warning size=sm icon=event_busy')
                     
                     elif visita.status == StatusVisita.REALIZADA:
-                        ui.label('✓ Realizada').classes('text-green-600 font-bold')
+                        with ui.card().classes('p-2 bg-green-100'):
+                            ui.icon('check_circle', size='md').classes('text-green-600')
+                            ui.label('Realizada').classes('text-green-700 font-bold text-sm')
                     
                     elif visita.status == StatusVisita.CANCELADA:
-                        ui.label('✗ Cancelada').classes('text-red-600 font-bold')
+                        with ui.card().classes('p-2 bg-red-100'):
+                            ui.icon('cancel', size='md').classes('text-red-600')
+                            ui.label('Cancelada').classes('text-red-700 font-bold text-sm')
                     
                     elif visita.status == StatusVisita.NAO_COMPARECEU:
-                        ui.label('⚠ Não Compareceu').classes('text-orange-600 font-bold')
+                        with ui.card().classes('p-2 bg-orange-100'):
+                            ui.icon('event_busy', size='md').classes('text-orange-600')
+                            ui.label('Não Compareceu').classes('text-orange-700 font-bold text-sm')
+
     
     def _abrir_dialogo_agendar_visita(self, email, tipo):
         if tipo != 'locatario':
             ui.notify('Apenas locatários podem agendar visitas', type='warning')
             return
         
-        
         negociacoes = self._negociacao_service.listar_por_locatario(email)
         
-        negociacoes_aprovadas = [n for n in negociacoes if n.status.value == 'Aprovada']
+        negociacoes_disponiveis = [
+            n for n in negociacoes 
+            if n.status in [StatusNegociacao.INICIADA, StatusNegociacao.APROVADA]
+        ]
         
-        if not negociacoes_aprovadas:
-            ui.notify('Você não possui negociações aprovadas para agendar visitas', type='warning')
+        if not negociacoes_disponiveis:
+            ui.notify('Você não possui negociações ativas para agendar visitas', type='warning')
             return
         
         dialog = ui.dialog()
@@ -148,21 +211,27 @@ class VisitasUi:
             with ui.card().classes('p-6 w-full max-w-lg'):
                 ui.label('Agendar Nova Visita').classes('text-2xl font-bold mb-4')
                 
+                options_dict = {}
+                for n in negociacoes_disponiveis:
+                    valor_display = n.valor_final if n.status == StatusNegociacao.APROVADA else n.valor_proposto
+                    status_text = n.status.value
+                    options_dict[n.id] = f'Negociação #{n.id} ({status_text}) - R$ {valor_display:.2f}'
+                
                 negociacao_select = ui.select(
                     label='Selecione a Negociação',
-                    options={n.id: f'Negociação #{n.id} - R$ {n.valor_final:.2f}' for n in negociacoes_aprovadas},
+                    options=options_dict,
                     with_input=True
                 ).classes('w-full')
                 
-                data_input = ui.date(
-                    label='Data da Visita',
-                    value=date.today()
-                ).classes('w-full')
+                ui.label('Você pode agendar visitas mesmo antes da aprovação do proprietário').classes('text-xs text-gray-500 italic mb-2')
                 
-                hora_input = ui.time(
-                    label='Horário',
-                    value='10:00'
-                ).classes('w-full')
+                with ui.input('Data da Visita').props('type=date') as data_input:
+                    data_input.value = date.today().isoformat()
+                data_input.classes('w-full')
+                
+                with ui.input('Horário').props('type=time') as hora_input:
+                    hora_input.value = '10:00'
+                hora_input.classes('w-full')
                 
                 obs_input = ui.textarea(
                     label='Observações (opcional)',
@@ -213,15 +282,13 @@ class VisitasUi:
                 ui.label('Reagendar Visita').classes('text-2xl font-bold mb-4')
                 ui.label(f'Visita #{visita.id}').classes('mb-2')
                 
-                data_input = ui.date(
-                    label='Nova Data',
-                    value=visita.data_agendada
-                ).classes('w-full')
+                with ui.input('Nova Data').props('type=date') as data_input:
+                    data_input.value = visita.data_agendada.isoformat()
+                data_input.classes('w-full')
                 
-                hora_input = ui.time(
-                    label='Novo Horário',
-                    value=visita.hora_agendada.strftime('%H:%M')
-                ).classes('w-full')
+                with ui.input('Novo Horário').props('type=time') as hora_input:
+                    hora_input.value = visita.hora_agendada.strftime('%H:%M')
+                hora_input.classes('w-full')
                 
                 with ui.row().classes('justify-end mt-4 gap-2'):
                     ui.button('Cancelar', on_click=dialog.close).props('flat')
@@ -240,7 +307,6 @@ class VisitasUi:
             ui.notify('Preencha todos os campos', type='warning')
             return
         
-        # Converte strings para objetos date e time
         nova_data = datetime.strptime(data_str, '%Y-%m-%d').date()
         nova_hora = datetime.strptime(hora_str, '%H:%M').time()
         

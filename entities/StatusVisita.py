@@ -2,7 +2,6 @@ from enum import Enum
 
 
 class StatusVisita(Enum):
-    """Enum que representa os possíveis status de uma visita."""
     AGENDADA = "agendada"
     REALIZADA = "realizada"
     CANCELADA = "cancelada"

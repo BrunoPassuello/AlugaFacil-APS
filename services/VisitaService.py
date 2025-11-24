@@ -7,7 +7,6 @@ from repository.NegociacaoRepositoryPickle import NegociacaoRepositoryPickle
 
 
 class VisitaService:
-    """Serviço responsável pela lógica de negócio de visitas."""
     
     def __init__(self, 
                 visita_repo: Optional[VisitaRepositoryPickle] = None,
@@ -25,20 +24,17 @@ class VisitaService:
         Retorna: (sucesso, visita, mensagem)
         """
         try:
-            # Valida se a negociação existe
             negociacao = self._negociacao_repo.get_por_id(negociacao_id)
             if not negociacao:
                 return False, None, "Negociação não encontrada"
             
-            # Valida se a data é futura
             from datetime import datetime
             data_hora_agendada = datetime.combine(data_agendada, hora_agendada)
             if data_hora_agendada < datetime.now():
                 return False, None, "Data e hora devem ser futuras"
             
-            # Cria a visita
             visita = Visita(
-                id=0,  # Será atribuído pelo repositório
+                id=0,  
                 data_agendada=data_agendada,
                 hora_agendada=hora_agendada,
                 observacoes=observacoes,
@@ -54,7 +50,6 @@ class VisitaService:
             return False, None, f"Erro ao agendar visita: {str(e)}"
     
     def realizar_visita(self, visita_id: int) -> Tuple[bool, str]:
-        """Marca uma visita como realizada."""
         try:
             visita = self._visita_repo.get_por_id(visita_id)
             if not visita:
@@ -71,7 +66,6 @@ class VisitaService:
             return False, f"Erro ao realizar visita: {str(e)}"
     
     def cancelar_visita(self, visita_id: int) -> Tuple[bool, str]:
-        """Cancela uma visita."""
         try:
             visita = self._visita_repo.get_por_id(visita_id)
             if not visita:
@@ -88,7 +82,6 @@ class VisitaService:
             return False, f"Erro ao cancelar visita: {str(e)}"
     
     def registrar_nao_comparecimento(self, visita_id: int) -> Tuple[bool, str]:
-        """Registra que o locatário não compareceu à visita."""
         try:
             visita = self._visita_repo.get_por_id(visita_id)
             if not visita:
@@ -108,13 +101,11 @@ class VisitaService:
                          visita_id: int,
                          nova_data: date,
                          nova_hora: time) -> Tuple[bool, str]:
-        """Reagenda uma visita para nova data e hora."""
         try:
             visita = self._visita_repo.get_por_id(visita_id)
             if not visita:
                 return False, "Visita não encontrada"
             
-            # Valida se a nova data é futura
             from datetime import datetime
             data_hora_agendada = datetime.combine(nova_data, nova_hora)
             if data_hora_agendada < datetime.now():
@@ -131,7 +122,6 @@ class VisitaService:
             return False, f"Erro ao reagendar visita: {str(e)}"
     
     def atualizar_observacoes(self, visita_id: int, observacoes: str) -> Tuple[bool, str]:
-        """Atualiza as observações de uma visita."""
         try:
             visita = self._visita_repo.get_por_id(visita_id)
             if not visita:
@@ -146,13 +136,19 @@ class VisitaService:
             return False, f"Erro ao atualizar observações: {str(e)}"
     
     def listar_por_negociacao(self, negociacao_id: int) -> List[Visita]:
-        """Lista todas as visitas de uma negociação."""
         return self._visita_repo.get_por_negociacao(negociacao_id)
     
     def get_por_id(self, visita_id: int) -> Optional[Visita]:
-        """Retorna uma visita por ID."""
         return self._visita_repo.get_por_id(visita_id)
     
     def listar_todas(self) -> List[Visita]:
-        """Lista todas as visitas."""
         return self._visita_repo.get_all()
+    
+    def listar_por_proprietario(self, proprietario_email: str) -> List[Visita]:
+        negociacoes = self._negociacao_repo.get_por_proprietario(proprietario_email)
+        
+        visitas = []
+        for negociacao in negociacoes:
+            visitas.extend(self._visita_repo.get_por_negociacao(negociacao.id))
+        
+        return visitas

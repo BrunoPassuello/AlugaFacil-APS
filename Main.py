@@ -2,13 +2,14 @@ from nicegui import ui
 
 from views.LoginUi import LoginUI
 from views.DashboardUi import DashboardUi
-
 from views.AnunciosUi import AnunciosUi
 from views.FavoritosUi import FavoritosUi
 from views.CadastroUi import CadastroUI
-
 from views.NegociacoesUi import NegociacoesUi
 from views.VisitasUi import VisitasUi
+
+from views.MeusImoveisUi import MeusImoveisUi
+from views.MeusAnunciosUi import MeusAnunciosUi
 
 @ui.page('/login')
 def login():
@@ -37,6 +38,14 @@ def negociacoes():
 @ui.page('/visitas')
 def visitas():
     VisitasUi().render()
+
+@ui.page('/meus-imoveis')
+def meus_imoveis():
+    MeusImoveisUi().render()
+
+@ui.page('/meus-anuncios')
+def meus_anuncios():
+    MeusAnunciosUi().render()
 
 @ui.page('/')
 def index():

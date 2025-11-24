@@ -6,7 +6,6 @@ from entities.StatusNegociacao import StatusNegociacao
 
 @dataclass
 class Negociacao:
-    """Entidade de domínio que representa uma negociação entre locatário e proprietário."""
     id: int
     avaliacao_locatario: float
     avaliacao_proprietario: float
@@ -17,13 +16,11 @@ class Negociacao:
     valor_final: float
     valor_proposto: float
     
-    # Relacionamentos bidirecionais (armazena referências aos IDs)
-    locatario_email: str  # Email do locatário (chave do repositório)
-    proprietario_email: str  # Email do proprietário
-    anuncio_id: int  # ID do anúncio relacionado
+    locatario_email: str  
+    proprietario_email: str  
+    anuncio_id: int  
     
     def __post_init__(self):
-        """Validações após inicialização."""
         if isinstance(self.status, str):
             self.status = StatusNegociacao(self.status)
         
@@ -37,7 +34,6 @@ class Negociacao:
             raise ValueError("Avaliação do proprietário deve estar entre 0 e 5")
     
     def to_dict(self):
-        """Converte a instância em um dicionário serializável."""
         return {
             "id": self.id,
             "avaliacao_locatario": self.avaliacao_locatario,
@@ -54,19 +50,16 @@ class Negociacao:
         }
     
     def aprovar(self):
-        """Aprova a negociação."""
         if self.status != StatusNegociacao.INICIADA:
             raise ValueError("Apenas negociações iniciadas podem ser aprovadas")
         self.status = StatusNegociacao.APROVADA
     
     def cancelar(self):
-        """Cancela a negociação."""
         if self.status == StatusNegociacao.FINALIZADA:
             raise ValueError("Negociações finalizadas não podem ser canceladas")
         self.status = StatusNegociacao.CANCELADA
     
     def finalizar(self):
-        """Finaliza a negociação."""
         if self.status != StatusNegociacao.APROVADA:
             raise ValueError("Apenas negociações aprovadas podem ser finalizadas")
         self.status = StatusNegociacao.FINALIZADA

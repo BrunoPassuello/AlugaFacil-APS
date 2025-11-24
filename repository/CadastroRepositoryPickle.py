@@ -40,10 +40,7 @@ class CadastroRepositoryPickle(CadastroRepository):
         self.__pessoas = self.carregar()  # Garante dados atualizados
         return self.__pessoas.copy()
 
-    # --------- NOVOS MÉTODOS ---------
-
     def update_cadastro(self, email: str, pessoa: Pessoa):
-        """Atualiza um cadastro existente pelo email (chave primária)."""
         email_norm = email.lower().strip()
         if email_norm not in self.__pessoas:
             raise ValueError("Pessoa não encontrada para atualização")
@@ -52,7 +49,6 @@ class CadastroRepositoryPickle(CadastroRepository):
         return True
 
     def delete(self, email: str):
-        """Remove registro do pickle."""
         email_norm = email.lower().strip()
         if email_norm in self.__pessoas:
             del self.__pessoas[email_norm]

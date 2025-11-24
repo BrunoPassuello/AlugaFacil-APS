@@ -51,7 +51,6 @@ class CadastroService:
             horario_atendimento = outros_dados.get("horario_atendimento", datetime.now())
             quantidade_imoveis = outros_dados.get("quantidade_imoveis", 0)
             
-            # Cria a instância do Proprietário
             novo_usuario = Proprietario(cpf, data_nascimento, email_norm, nome, senha, telefone, 
                                         aceita_apenas_tel_verf, anos_mercado, avaliacao_media, 
                                         horario_atendimento, quantidade_imoveis, telefone_verificado)

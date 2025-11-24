@@ -24,7 +24,6 @@ class Locatario(Pessoa):
 
         self.__negociacoes = []
 
-        # Lista de favoritos: cada item é um dicionário {"anuncio": Anuncio, "anotacao": str, "data_favorito": datetime}
         self.__favoritos = []
 
     @property
@@ -114,15 +113,10 @@ class Locatario(Pessoa):
     def adicionar_negociacoes(self, negociacao):
         self.__negociacoes.append(negociacao)
 
-    # --------- FAVORITOS ---------
-
     def add_favorito(self, anuncio, anotacao: str = ""):
-        """Adiciona um anúncio aos favoritos com anotação opcional. Evita duplicados pelo id do anúncio."""
         from datetime import datetime
-        # Inicializa favoritos se não existir (caso de objetos antigos carregados do pickle)
         if not hasattr(self, "_Locatario__favoritos"):
             self.__favoritos = []
-        # Checa se já existe
         if any(f["anuncio"].id == anuncio.id for f in self.__favoritos):
             return False
         self.__favoritos.append(
@@ -147,7 +141,6 @@ class Locatario(Pessoa):
         return len(self.__favoritos) < tamanho_inicial
 
     def get_favoritos(self):
-        """Retorna a lista de favoritos (deepcopy para não permitir mutação externa)."""
         if not hasattr(self, "_Locatario__favoritos"):
             self.__favoritos = []
         import copy
